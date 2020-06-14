@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Quotes</title>
+    <style type="text/css">
+        /** IMPORT FONT **/
+        @import url('https://fonts.googleapis.com/css?family=Lato:300');
+        body, html{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Lato', 'Helvetica';
+            font-size: 1.2em;
+            line-height: 1.3em;
+        }
+        .mainBody{
+            max-width: 600px;
+            height: 100%;
+            margin: 0 auto;
+            border: 0px solid;
+            padding: 0;
+        }
+        .adsArea{
+            background: #edeeef;
+            padding: 10px 12px;
+            font-size: 0.8em !important;
+            line-height: 1em !important;
+            text-align: center;
+        }
+        .adsArea > a{
+            text-decoration: none;
+            color: black;
+        }
+        .bodyQuote{
+            text-align: center;
+        }
+        #playButton{
+            background: #edeeef;
+            cursor: pointer;
+            width: 80%;
+            text-align: center;
+        }
+        #nextButton{
+            text-align: center;
+            cursor: pointer;
+        }
+        #loadingtext{
+            text-align: center;
+        }
+        #loadingtext img{
+            width: 30px;
+            height: 30px;
+        }
+        .blinker{
+            padding: 2px 0px;
+            background: #efe58d;
+            color: #fff;
+            font-size: 0.5em;
+        }
+    
+    </style>
+    
+    <script type="text/javascript">
+        /*var count = 0;
+        times = setInterval(countDown, 10);
+        
+        var width = 0.25; // 1 / 4000
+        var w = 0;
+        
+        toggle = 1; // 1-Play 0-Pause*/
+        
+        var times;
+        getQuote();
+        
+        function nl2br(str, is_xhtml) {   
+            var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
+            return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+        }
+        
+        function starToBold(text){
+            splitText = text.split('*');
+            lengthText = splitText.length;
+            upText = '';
+            
+            if(lengthText > 2){
+                for(i=0; i < lengthText; i++){
+                    if((splitText[i].startsWith(' ') == false)&&(splitText[i].endsWith(' ') == false)&&((i%2) != 0)){
+                        upText += "<b>" + splitText[i] + "</b>";
+                    }else{
+                        upText += splitText[i];
+                    }
+                }
+            }else{
+                upText += splitText;
+            }
+            
+            return upText;
+        }
+        
+        function underToItalic(text){
+            splitText = text.split('_');
+            lengthText = splitText.length;
+            upText = '';
+            
+            if(lengthText > 2){
+                for(i=0; i < lengthText; i++){
+                    if((splitText[i].startsWith(' ') == false)&&(splitText[i].endsWith(' ') == false)&&((i%2) != 0)){
+                        upText += "<i>" + splitText[i] + "</i>";
+                    }else{
+                        upText += splitText[i];
+                    }
+                }
+            }else{
+                upText += splitText;
+            }
+            
+            return upText;
+        }
+        
+        function markdownToHTML(text){
+            text = nl2br(starToBold(underToItalic(text)));
+            
+            return text;
+        }
+        
+        function countDown(){
+            if(count < 400){
+                count = count + 1;
+                w = w + 0.25;
+                $('#barLoad').css('width', w+'%');
+            }else{
+                getQuote();
+            }
+        }
+        
+        $(window).ready(function(){
+            $('#playButton').click(function(){
+                if(toggle == 1){
+                    toggle = 0;
+                    $('#playButton').text('Play');
+                    clearInterval(times);
+                }else{
+                    toggle = 1;
+                    $('#playButton').text('Pause');
+                    times = setInterval(countDown, 10);
+                }
+            });
+        });
+                
+        function getQuote(){
+            clearInterval(times);
+            $.ajax({
+              url: "http://cors-anywhere.herokuapp.com/https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en",
+              dataType: "json",
+              header: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              error: function(){
+                  var attmpt = 3;
+                  setInterval(function(){
+                      $('div#loadingtext').html('Error parsing data. <br/><a href="javascript:reload()">Refresh</a> in '+attmpt);
+                      attmpt--;
+                      if(attmpt == -1) reload();
+                  }, 1000);
+              },
+              beforeSend: function(){
+                  $('div#loadingtext').css('display', 'block');
+                  $('#quoteText').css('display', 'none');
+              },
+              success: function(d){
+                  $('div#loadingtext').css('display', 'none');
+                  $('#quoteText').css('display', 'block');
+
+                  w = 0; count = 0; toggle = 1;
+                  $('#barLoad').css('width', w+'%');
+                  times = setInterval(countDown, 10);
+                  $('#playButton').text('Pause');
+
+                  $('#quoteText').html(markdownToHTML(d.quoteText));
+
+            },
+            timeout: 5000
+            });
+            $('div#loadingtext').html("<img src='https://4.bp.blogspot.com/-vHl7tf0E6RE/WJEqBSZCT2I/AAAAAAAAAAg/8MY_fwPlTWUz_kE8P5J10uOln2gtIfy1gCPcB/s1600/spinner-icon-0.gif'/>");
+        }
+                
+        function reload(){ 
+            window.location.reload();
+        }
+        
+        function blink(){
+            $('.blinker').fadeOut(500);
+            $('.blinker').fadeIn(500);
+        }
+        
+        setInterval(blink, 1000);
+        
+    </script>
+</head>
+<body>
+    <div class='mainBody'>
+        
+        <table border="0" cellpadding='0' cellspacing='0' width='100%' height='100%'>
+        <tr>
+            <td class='adsArea' colspan="2" height='5%'>
+                <a href="https://github.com/thaqiif"><span class='blinker'>ADS</span>Github: thaqiif</a>
+            </td>
+        </tr>
+        <tr>
+            <td class='bodyQuote' colspan="2" style='padding: 12px;'>
+            
+                <div id='loadingtext'><img src='https://4.bp.blogspot.com/-vHl7tf0E6RE/WJEqBSZCT2I/AAAAAAAAAAg/8MY_fwPlTWUz_kE8P5J10uOln2gtIfy1gCPcB/s1600/spinner-icon-0.gif'/></div>
+                <div id='quoteText'></div>
+            
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" height='1px'>
+                <div style="background: black;height:5px;" id='barLoad'></div>
+            </td>
+        </tr>
+        <tr>
+            <td height='15%' id='playButton'>
+                Pause
+            </td>
+            <td id='nextButton' onclick="javascript:getQuote();">
+                Next
+            </td>
+        </tr>
+        </table>
+    </div>
+</body>
+</html>
